@@ -13,6 +13,8 @@
         .input-field:focus { border-color: #1DB954; }
         .btn-primary { background-color: #1DB954; color: white; padding: 0.75rem 1.5rem; border-radius: 9999px; font-weight: 700; width: 100%; transition: 0.2s; cursor: pointer; border: none; }
         .btn-primary:hover { background-color: #1ed760; }
+        .btn-secondary { background-color: #3B82F6; color: white; padding: 0.75rem 1.5rem; border-radius: 9999px; font-weight: 700; width: 100%; transition: 0.2s; cursor: pointer; border: none; }
+        .btn-secondary:hover { background-color: #2563EB; }
         .btn-whatsapp { background-color: #25D366; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: bold; width: 100%; display: block; text-align: center; margin-top: 10px; text-decoration: none;}
         .btn-google { background-color: #ffffff; color: #333; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.2s; cursor: pointer; border: none; }
         .btn-google:hover { background-color: #f1f1f1; }
@@ -66,44 +68,57 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- Coluna 1: Formulário (Só aparece se logado) -->
-            <div id="form-container" class="hidden container-card p-6 lg:col-span-1 space-y-6 self-start">
-                <h2 class="text-xl font-bold text-white border-b border-gray-700 pb-2">Novo Pagamento</h2>
+            <!-- Coluna 1: Formulários (Só aparecem se logado) -->
+            <div id="form-container" class="hidden lg:col-span-1 space-y-6 self-start">
                 
-                <form id="form-pagamento" class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Nome do Membro</label>
-                        <input type="text" id="nome" class="input-field" placeholder="Ex: Mariana" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">WhatsApp (DDD + Número)</label>
-                        <input type="tel" id="whatsapp" class="input-field" placeholder="91999999999" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Valor Pago (R$)</label>
-                        <input type="number" id="valor" class="input-field" placeholder="Ex: 65" step="0.01" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Forma</label>
-                        <select id="metodo" class="input-field" required>
-                            <option value="PIX">PIX</option>
-                            <option value="Dinheiro">Dinheiro</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-primary mt-4">Registrar Pagamento</button>
-                </form>
+                <!-- Cadastrar Novo Pagamento -->
+                <div class="container-card p-6 space-y-4">
+                    <h2 class="text-xl font-bold text-white border-b border-gray-700 pb-2">Novo Pagamento</h2>
+                    <form id="form-pagamento" class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Nome do Membro</label>
+                            <input type="text" id="nome" class="input-field" placeholder="Ex: Mariana" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">WhatsApp (Opcional)</label>
+                            <input type="tel" id="whatsapp" class="input-field" placeholder="91999999999">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Valor Pago (R$)</label>
+                            <input type="number" id="valor" class="input-field" placeholder="Ex: 65" step="0.01" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Forma</label>
+                            <select id="metodo" class="input-field" required>
+                                <option value="PIX">PIX</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                            </select>
+                        </div>
+                        <input type="hidden" id="edit-pagamento-id" value="">
+                        <button type="submit" id="btn-submit-pagamento" class="btn-primary mt-4">Registrar Pagamento</button>
+                        <button type="button" id="btn-cancel-edit" class="hidden w-full mt-2 py-2 border border-gray-500 rounded-lg text-gray-300 hover:bg-gray-700 transition">Cancelar Edição</button>
+                    </form>
 
-                <!-- Área de Confirmação (Opcional WA) -->
-                <div id="area-whatsapp" class="hidden mt-6 p-5 bg-gray-800 rounded-lg text-center border border-gray-600 shadow-inner">
-                    <p class="text-green-400 font-bold mb-3 text-lg">✅ Salvo no Sistema!</p>
-                    <p class="text-sm text-gray-400 mb-4">Deseja enviar o recibo para o membro?</p>
-                    <a id="btn-enviar-wa" href="#" target="_blank" class="btn-whatsapp">
-                        📲 Enviar via WhatsApp
-                    </a>
-                    <button id="btn-novo-registro" class="w-full mt-3 py-2 border border-gray-500 rounded-lg text-gray-300 hover:bg-gray-700 transition">
-                        Não, apenas fechar
-                    </button>
+                    <!-- Área WhatsApp -->
+                    <div id="area-whatsapp" class="hidden mt-6 p-4 bg-gray-800 rounded-lg text-center border border-gray-600">
+                        <p class="text-green-400 font-bold mb-2">✅ Salvo no Sistema!</p>
+                        <a id="btn-enviar-wa" href="#" target="_blank" class="btn-whatsapp">📲 Enviar via WhatsApp</a>
+                        <button id="btn-novo-registro" class="w-full mt-3 py-2 border border-gray-500 rounded-lg text-gray-300 hover:bg-gray-700 transition">Fechar</button>
+                    </div>
                 </div>
+
+                <!-- Adicionar Membro na Célula -->
+                <div class="container-card p-6 space-y-4">
+                    <h2 class="text-xl font-bold text-white border-b border-gray-700 pb-2">Adicionar à Célula</h2>
+                    <form id="form-membro" class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Nome do Membro</label>
+                            <input type="text" id="novo-membro-nome" class="input-field" placeholder="Ex: Carlos" required>
+                        </div>
+                        <button type="submit" class="btn-secondary">Cadastrar na Célula</button>
+                    </form>
+                </div>
+
             </div>
 
             <!-- Coluna 2: Tabela de Status (Visível para todos) -->
@@ -113,7 +128,7 @@
                     <span class="text-sm bg-gray-800 px-3 py-1 rounded-full text-gray-300 border border-gray-700">Meta: R$ 450,00</span>
                 </div>
                 
-                <p class="text-xs text-gray-400 mb-2">💡 Clique no nome do membro para ver o histórico de pagamentos.</p>
+                <p class="text-xs text-gray-400 mb-2">💡 Clique no nome do membro para ver o histórico ou gerenciar pagamentos.</p>
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -126,7 +141,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabela-status" class="text-gray-200 text-sm">
-                            <!-- Linhas inseridas via JS -->
+                            <!-- Inserido via JS -->
                         </tbody>
                     </table>
                 </div>
@@ -135,23 +150,20 @@
         </div>
     </main>
 
-    <!-- Scripts do Firebase e Lógica -->
+    <!-- Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ==========================================
-        // 1. COLE SUA CONFIGURAÇÃO DO FIREBASE AQUI
-        // ==========================================
         const firebaseConfig = {
-     apiKey: "AIzaSyD8AyVw3pairdOxbS86DBBj9WOJHSyKdhw",
-     authDomain: "registrocelulas-6d494.firebaseapp.com",
-     projectId: "registrocelulas-6d494",
-     storageBucket: "registrocelulas-6d494.firebasestorage.app",
-     messagingSenderId: "954829571447",
-     appId: "1:954829571447:web:e129c64a7cc0c7ec758d72"
-      };
+            apiKey: "AIzaSyD8AyVw3pairdOxbS86DBBj9WOJHSyKdhw",
+            authDomain: "registrocelulas-6d494.firebaseapp.com",
+            projectId: "registrocelulas-6d494",
+            storageBucket: "registrocelulas-6d494.firebasestorage.app",
+            messagingSenderId: "954829571447",
+            appId: "1:954829571447:web:e129c64a7cc0c7ec758d72"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -159,10 +171,10 @@
         const provider = new GoogleAuthProvider();
         
         const META_RETIRO = 450.00;
-        let isLider = false; // Controle de acesso
+        let isLider = false;
         let todosPagamentos = [];
+        let todosMembros = [];
 
-        // Elementos da UI
         const btnLogin = document.getElementById('btn-login');
         const btnLogout = document.getElementById('btn-logout');
         const userInfo = document.getElementById('user-info');
@@ -170,7 +182,6 @@
         const formContainer = document.getElementById('form-container');
         const tableContainer = document.getElementById('table-container');
 
-        // Autenticação
         btnLogin.addEventListener('click', async () => {
             try { await signInWithPopup(auth, provider); } 
             catch (error) { console.error("Erro no login", error); alert("Erro ao logar."); }
@@ -185,20 +196,19 @@
                 userInfo.classList.remove('hidden');
                 userEmail.textContent = user.email;
                 formContainer.classList.remove('hidden');
-                tableContainer.classList.replace('lg:col-span-3', 'lg:col-span-2'); // Ajusta grid
+                tableContainer.classList.replace('lg:col-span-3', 'lg:col-span-2');
             } else {
                 isLider = false;
                 btnLogin.classList.remove('hidden');
                 userInfo.classList.add('hidden');
                 formContainer.classList.add('hidden');
-                tableContainer.classList.replace('lg:col-span-2', 'lg:col-span-3'); // Ajusta grid para tela cheia
+                tableContainer.classList.replace('lg:col-span-2', 'lg:col-span-3');
             }
-            atualizarTabela(); // Re-renderiza para mostrar/esconder botões de deletar
+            atualizarTabela();
         });
 
-        // Escutar pagamentos em tempo real
-        const q = query(collection(db, "pagamentos_retiro"), orderBy("data", "desc"));
-        onSnapshot(q, (snapshot) => {
+        // Escutar Pagamentos
+        onSnapshot(query(collection(db, "pagamentos_retiro"), orderBy("data", "desc")), (snapshot) => {
             todosPagamentos = [];
             snapshot.forEach((doc) => {
                 todosPagamentos.push({ id: doc.id, ...doc.data() });
@@ -206,55 +216,114 @@
             atualizarTabela();
         });
 
-        // Salvar Formulário
-        const form = document.getElementById('form-pagamento');
+        // Escutar Membros da Célula
+        onSnapshot(query(collection(db, "membros_celula"), orderBy("nome", "asc")), (snapshot) => {
+            todosMembros = [];
+            snapshot.forEach((doc) => {
+                todosMembros.push({ id: doc.id, ...doc.data() });
+            });
+            atualizarTabela();
+        });
+
+        // Cadastrar Novo Membro
+        const formMembro = document.getElementById('form-membro');
+        formMembro.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nomeMembro = document.getElementById('novo-membro-nome').value.trim();
+            try {
+                await addDoc(collection(db, "membros_celula"), { nome: nomeMembro });
+                document.getElementById('novo-membro-nome').value = '';
+                alert("Membro adicionado à célula com sucesso!");
+            } catch (error) {
+                console.error("Erro ao cadastrar membro:", error);
+                alert("Erro ao cadastrar membro.");
+            }
+        });
+
+        // Salvar ou Editar Pagamento
+        const formPagamento = document.getElementById('form-pagamento');
         const areaWhatsapp = document.getElementById('area-whatsapp');
         const btnEnviarWa = document.getElementById('btn-enviar-wa');
+        const editPagamentoId = document.getElementById('edit-pagamento-id');
+        const btnSubmitPagamento = document.getElementById('btn-submit-pagamento');
+        const btnCancelEdit = document.getElementById('btn-cancel-edit');
 
-        form.addEventListener('submit', async (e) => {
+        formPagamento.addEventListener('submit', async (e) => {
             e.preventDefault();
             const nome = document.getElementById('nome').value.trim();
             const whatsapp = document.getElementById('whatsapp').value.replace(/\D/g, '');
             const valor = parseFloat(document.getElementById('valor').value);
             const metodo = document.getElementById('metodo').value;
+            const idEditando = editPagamentoId.value;
 
             try {
-                await addDoc(collection(db, "pagamentos_retiro"), {
-                    nome: nome,
-                    whatsapp: whatsapp,
-                    valor: valor,
-                    metodo: metodo,
-                    celula: "R119",
-                    data: new Date().toISOString()
-                });
+                if (idEditando) {
+                    // Atualizar pagamento existente
+                    await updateDoc(doc(db, "pagamentos_retiro", idEditando), {
+                        nome: nome,
+                        whatsapp: whatsapp,
+                        valor: valor,
+                        metodo: metodo
+                    });
+                    alert("Pagamento atualizado com sucesso!");
+                    resetarFormularioEdicao();
+                } else {
+                    // Criar novo pagamento
+                    await addDoc(collection(db, "pagamentos_retiro"), {
+                        nome: nome,
+                        whatsapp: whatsapp,
+                        valor: valor,
+                        metodo: metodo,
+                        celula: "R119",
+                        data: new Date().toISOString()
+                    });
 
-                // Calculo para mensagem WA
-                const totalJaPago = todosPagamentos
-                    .filter(p => p.nome.toLowerCase() === nome.toLowerCase())
-                    .reduce((acc, curr) => acc + curr.valor, 0) + valor; 
-                const saldoDevedor = Math.max(META_RETIRO - totalJaPago, 0);
+                    // Garantir que o membro também conste na lista de membros da célula
+                    const existeNaLista = todosMembros.some(m => m.nome.toLowerCase() === nome.toLowerCase());
+                    if (!existeNaLista) {
+                        await addDoc(collection(db, "membros_celula"), { nome: nome });
+                    }
 
-                const mensagem = `Olá, *${nome}*! \nConfirmamos o registro do seu pagamento para o *Retiro* da célula R119.\n\n- *Valor recebido agora:* R$ ${valor.toFixed(2).replace('.', ',')}\n- *Total já pago:* R$ ${totalJaPago.toFixed(2).replace('.', ',')} / R$ 450,00\n- *Falta:* R$ ${saldoDevedor.toFixed(2).replace('.', ',')}\n\nDeus abençoe!`;
-                
-                btnEnviarWa.href = `https://wa.me/55${whatsapp}?text=${encodeURIComponent(mensagem)}`;
+                    if (whatsapp) {
+                        const totalJaPago = todosPagamentos
+                            .filter(p => p.nome.toLowerCase() === nome.toLowerCase())
+                            .reduce((acc, curr) => acc + curr.valor, 0) + valor; 
+                        const saldoDevedor = Math.max(META_RETIRO - totalJaPago, 0);
 
-                form.classList.add('hidden');
-                areaWhatsapp.classList.remove('hidden');
+                        const mensagem = `Olá, *${nome}*! \nConfirmamos o registro do seu pagamento para o *Retiro* da célula R119.\n\n- *Valor recebido:* R$ ${valor.toFixed(2).replace('.', ',')}\n- *Total já pago:* R$ ${totalJaPago.toFixed(2).replace('.', ',')} / R$ 450,00\n- *Falta:* R$ ${saldoDevedor.toFixed(2).replace('.', ',')}\n\nDeus abençoe!`;
+                        
+                        btnEnviarWa.href = `https://wa.me/55${whatsapp}?text=${encodeURIComponent(mensagem)}`;
+                        formPagamento.classList.add('hidden');
+                        areaWhatsapp.classList.remove('hidden');
+                    } else {
+                        formPagamento.reset();
+                        alert("Pagamento registrado com sucesso!");
+                    }
+                }
             } catch (error) {
-                console.error("Erro ao salvar:", error); alert("Erro ao salvar.");
+                console.error("Erro ao salvar:", error); 
+                alert("Erro ao salvar.");
             }
         });
 
-        // Fechar WhatsApp modal
+        function resetarFormularioEdicao() {
+            formPagamento.reset();
+            editPagamentoId.value = '';
+            btnSubmitPagamento.textContent = "Registrar Pagamento";
+            btnCancelEdit.classList.add('hidden');
+        }
+
+        btnCancelEdit.addEventListener('click', resetarFormularioEdicao);
+
         document.getElementById('btn-novo-registro').addEventListener('click', () => {
-            form.reset();
-            form.classList.remove('hidden');
+            formPagamento.reset();
+            formPagamento.classList.remove('hidden');
             areaWhatsapp.classList.add('hidden');
         });
 
-        // Apagar Documento
+        // Funções Globais de Ação
         window.deletarPagamento = async (id) => {
-            if(confirm("Tem certeza que deseja apagar este pagamento? O valor será descontado.")) {
+            if(confirm("Tem certeza que deseja apagar este pagamento?")) {
                 try {
                     await deleteDoc(doc(db, "pagamentos_retiro", id));
                 } catch (error) {
@@ -263,10 +332,20 @@
             }
         };
 
-        // Função para expandir histórico
+        window.editarPagamento = (id, nome, whatsapp, valor, metodo) => {
+            document.getElementById('nome').value = nome;
+            document.getElementById('whatsapp').value = whatsapp || '';
+            document.getElementById('valor').value = valor;
+            document.getElementById('metodo').value = metodo;
+            editPagamentoId.value = id;
+            btnSubmitPagamento.textContent = "Salvar Alterações";
+            btnCancelEdit.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
         window.toggleHistory = (nomeId) => {
             const row = document.getElementById(`history-${nomeId}`);
-            row.classList.toggle('hidden');
+            if(row) row.classList.toggle('hidden');
         };
 
         function atualizarTabela() {
@@ -276,16 +355,22 @@
             let somaGeral = 0;
             const resumoMembros = {};
 
-            // Agrupar dados
+            // 1. Inicializar com todos os membros cadastrados na célula (mesmo quem não pagou)
+            todosMembros.forEach(m => {
+                const nomeKey = m.nome.toUpperCase();
+                resumoMembros[nomeKey] = { nomeReal: m.nome, total: 0, historico: [], whatsapp: m.whatsapp || '' };
+            });
+
+            // 2. Processar pagamentos e vincular aos membros
             todosPagamentos.forEach(p => {
-                const nomeChave = p.nome.toUpperCase();
+                const nomeKey = p.nome.toUpperCase();
                 somaGeral += p.valor;
                 
-                if (!resumoMembros[nomeChave]) {
-                    resumoMembros[nomeChave] = { total: 0, historico: [], whatsapp: p.whatsapp };
+                if (!resumoMembros[nomeKey]) {
+                    resumoMembros[nomeKey] = { nomeReal: p.nome, total: 0, historico: [], whatsapp: p.whatsapp || '' };
                 }
-                resumoMembros[nomeChave].total += p.valor;
-                resumoMembros[nomeChave].historico.push(p);
+                resumoMembros[nomeKey].total += p.valor;
+                resumoMembros[nomeKey].historico.push(p);
             });
 
             // Atualizar KPIs
@@ -298,20 +383,18 @@
             document.getElementById('kpi-progress-text').textContent = `${progressoGeral}%`;
 
             // Gerar Linhas da Tabela
-            for (const [nome, dados] of Object.entries(resumoMembros)) {
+            for (const [key, dados] of Object.entries(resumoMembros)) {
                 const falta = Math.max(META_RETIRO - dados.total, 0);
                 const porcentagem = Math.min((dados.total / META_RETIRO) * 100, 100).toFixed(0);
                 let corBarra = porcentagem == 100 ? 'bg-green-500' : 'bg-blue-500';
-                
-                const idUnico = nome.replace(/\s+/g, '');
+                const idUnico = key.replace(/\s+/g, '');
 
-                // Linha Principal (Resumo)
                 const tr = document.createElement('tr');
                 tr.className = 'border-b border-gray-800 expandable-row';
                 tr.onclick = () => toggleHistory(idUnico);
                 tr.innerHTML = `
                     <td class="py-4 px-3 font-semibold capitalize flex items-center gap-2">
-                        <span class="text-xs text-gray-500">▶</span> ${nome.toLowerCase()}
+                        <span class="text-xs text-gray-500">▶</span> ${dados.nomeReal.toLowerCase()}
                     </td>
                     <td class="py-4 px-3 text-center text-green-400 font-bold">R$ ${dados.total.toFixed(2)}</td>
                     <td class="py-4 px-3 text-center text-red-400">R$ ${falta.toFixed(2)}</td>
@@ -326,23 +409,31 @@
                 `;
                 tabelaStatus.appendChild(tr);
 
-                // Linha Oculta (Histórico de Pagamentos)
+                // Histórico e botões de editar/excluir
                 let linhasHistorico = '';
-                dados.historico.forEach(p => {
-                    const dataFormatada = new Date(p.data).toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
-                    const btnDeletar = isLider ? 
-                        `<button onclick="deletarPagamento('${p.id}')" class="text-red-500 hover:text-red-400 text-xs px-2 py-1 bg-red-900/30 rounded border border-red-800/50">Excluir</button>` : '';
-                    
-                    linhasHistorico += `
-                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 last:border-0 text-gray-300">
-                            <div class="flex items-center gap-4">
-                                <span class="bg-gray-700 px-2 py-1 rounded text-xs">${dataFormatada}</span>
-                                <span>R$ ${p.valor.toFixed(2)} <span class="text-xs text-gray-500 ml-1">(${p.metodo})</span></span>
+                if (dados.historico.length === 0) {
+                    linhasHistorico = `<p class="text-xs text-gray-500 py-2">Nenhum pagamento registrado para este membro ainda.</p>`;
+                } else {
+                    dados.historico.forEach(p => {
+                        const dataFormatada = p.data ? new Date(p.data).toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'}) : '--/--';
+                        const btnAcoes = isLider ? `
+                            <div class="flex gap-2">
+                                <button onclick="editarPagamento('${p.id}', '${p.nome}', '${p.whatsapp || ''}', ${p.valor}, '${p.metodo}')" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-900/30 rounded border border-blue-800/50">Editar</button>
+                                <button onclick="deletarPagamento('${p.id}')" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-900/30 rounded border border-red-800/50">Excluir</button>
                             </div>
-                            ${btnDeletar}
-                        </div>
-                    `;
-                });
+                        ` : '';
+                        
+                        linhasHistorico += `
+                            <div class="flex justify-between items-center py-2 border-b border-gray-700/50 last:border-0 text-gray-300">
+                                <div class="flex items-center gap-4">
+                                    <span class="bg-gray-700 px-2 py-1 rounded text-xs">${dataFormatada}</span>
+                                    <span>R$ ${p.valor.toFixed(2)} <span class="text-xs text-gray-500 ml-1">(${p.metodo})</span></span>
+                                </div>
+                                ${btnAcoes}
+                            </div>
+                        `;
+                    });
+                }
 
                 const trDetail = document.createElement('tr');
                 trDetail.id = `history-${idUnico}`;
