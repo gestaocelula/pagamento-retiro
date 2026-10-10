@@ -46,6 +46,54 @@
             </div>
         </header>
 
+                <section id="painel-acessos"
+                 class="hidden container-card p-6 space-y-4">
+
+            <h2 class="text-xl font-bold text-white">
+                Gerenciar acessos — R119
+            </h2>
+
+            <p class="text-sm text-gray-400">
+                A pessoa precisa entrar com Google uma vez
+                para aparecer nesta lista.
+            </p>
+
+            <form id="form-acessos" class="space-y-4">
+                <label for="acesso-usuario"
+                       class="block text-sm text-gray-400">
+                    Pessoa
+                </label>
+
+                <select id="acesso-usuario"
+                        class="input-field" required disabled>
+                    <option value="">Lista ainda não conectada</option>
+                </select>
+
+                <p id="acesso-atual" class="text-sm text-gray-400"></p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button id="btn-liberar-acesso"
+                            type="submit"
+                            class="btn-secondary"
+                            disabled>
+                        Liberar edição
+                    </button>
+
+                    <button id="btn-revogar-acesso"
+                            type="button"
+                            class="btn-primary"
+                            disabled>
+                        Retirar edição
+                    </button>
+                </div>
+
+                <p id="acesso-mensagem"
+                   class="text-sm text-gray-300"
+                   role="status"
+                   aria-live="polite"></p>
+            </form>
+        </section>
+
         <!-- KPIs Gerais -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="container-card p-5 border-l-4 border-green-500 flex justify-between items-center">
@@ -128,7 +176,9 @@
                     <span class="text-sm bg-gray-800 px-3 py-1 rounded-full text-gray-300 border border-gray-700">Meta: R$ 450,00</span>
                 </div>
                 
-                <p class="text-xs text-gray-400 mb-2">💡 Clique no nome do membro para ver o histórico ou gerenciar pagamentos.</p>
+                <p id="ajuda-historico" class="hidden text-xs text-gray-400 mb-2">
+    💡 Clique no nome do membro para ver o histórico ou gerenciar pagamentos.
+</p>
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -154,7 +204,11 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import {
+            getFirestore, collection, addDoc, updateDoc, doc,
+            onSnapshot, query, orderBy, deleteDoc, writeBatch,
+            setDoc, serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD8AyVw3pairdOxbS86DBBj9WOJHSyKdhw",
@@ -184,27 +238,260 @@
 
         btnLogin.addEventListener('click', async () => {
             try { await signInWithPopup(auth, provider); } 
-            catch (error) { console.error("Erro no login", error); alert("Erro ao logar."); }
+            catch (error) {
+    console.error("Erro no login:", error);
+    alert(`Erro no login: ${error.code}\n${error.message}`);
+}
         });
 
         btnLogout.addEventListener('click', () => { signOut(auth); });
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                isLider = true;
-                btnLogin.classList.add('hidden');
-                userInfo.classList.remove('hidden');
-                userEmail.textContent = user.email;
-                formContainer.classList.remove('hidden');
-                tableContainer.classList.replace('lg:col-span-3', 'lg:col-span-2');
-            } else {
-                isLider = false;
-                btnLogin.classList.remove('hidden');
-                userInfo.classList.add('hidden');
-                formContainer.classList.add('hidden');
-                tableContainer.classList.replace('lg:col-span-2', 'lg:col-span-3');
+                onAuthStateChanged(auth, (user) => {
+                    const EMAIL_ADMIN = 'wendellucas2014@gmail.com';
+        const EMAIL_EDITOR_INICIAL = 'jhelianec18@gmail.com';
+
+        let administrador = false;
+        let usuarios = [];
+        let autorizacoes = new Map();
+        let escutasAcesso = [];
+        let numeroSessao = 0;
+        let salvandoAcesso = false;
+
+        const painelAcessos = document.getElementById('painel-acessos');
+        const seletorAcesso = document.getElementById('acesso-usuario');
+        const mensagemAcesso = document.getElementById('acesso-mensagem');
+        const btnLiberar = document.getElementById('btn-liberar-acesso');
+        const btnRevogar = document.getElementById('btn-revogar-acesso');
+
+        function papelDaPessoa(pessoa) {
+            const email = (pessoa?.email || '').toLowerCase();
+
+            if (email === EMAIL_ADMIN) return 'admin';
+
+            return autorizacoes.get(pessoa?.id) ||
+                (email === EMAIL_EDITOR_INICIAL
+                    ? 'editor'
+                    : 'visualizador');
+        }
+
+        function atualizarPainelAcessos() {
+            const selecionado = seletorAcesso.value;
+
+            seletorAcesso.replaceChildren(
+                new Option('Selecione uma pessoa', '')
+            );
+
+            usuarios.forEach(pessoa => {
+                const papel = papelDaPessoa(pessoa);
+
+                seletorAcesso.add(new Option(
+                    `${pessoa.email} — ${papel}`,
+                    pessoa.id
+                ));
+            });
+
+            seletorAcesso.value = selecionado;
+            seletorAcesso.disabled = !administrador || salvandoAcesso;
+
+            const pessoa = usuarios.find(
+                p => p.id === seletorAcesso.value
+            );
+
+            const papel = papelDaPessoa(pessoa);
+            const bloqueado = !administrador || !pessoa ||
+                papel === 'admin' || salvandoAcesso;
+
+            btnLiberar.disabled = bloqueado;
+            btnRevogar.disabled = bloqueado;
+
+            document.getElementById('acesso-atual').textContent =
+                pessoa ? `Acesso atual: ${papel}` : '';
+        }
+
+        function aplicarAcessoNaTela() {
+            formContainer.classList.toggle('hidden', !isLider);
+
+            tableContainer.classList.toggle('lg:col-span-2', isLider);
+            tableContainer.classList.toggle('lg:col-span-3', !isLider);
+
+            painelAcessos.classList.toggle('hidden', !administrador);
+
+            document.getElementById('ajuda-historico')
+                .classList.toggle('hidden', !isLider);
+
+            if (!isLider) {
+                resetarFormularioEdicao();
+                formMembro.reset();
+                areaWhatsapp.classList.add('hidden');
+                formPagamento.classList.remove('hidden');
             }
+
             atualizarTabela();
+            atualizarPainelAcessos();
+        }
+
+        seletorAcesso.addEventListener(
+            'change', atualizarPainelAcessos
+        );
+
+        onAuthStateChanged(auth, async user => {
+            const sessaoAtual = ++numeroSessao;
+
+            escutasAcesso.forEach(parar => parar());
+            escutasAcesso = [];
+            usuarios = [];
+            autorizacoes.clear();
+
+            administrador = false;
+            isLider = false;
+
+            btnLogin.classList.toggle('hidden', Boolean(user));
+            userInfo.classList.toggle('hidden', !user);
+            userEmail.textContent = user?.email || '';
+            mensagemAcesso.textContent = '';
+
+            aplicarAcessoNaTela();
+
+            if (!user) return;
+
+            try {
+                // Registra o perfil, sem conceder edição.
+                await setDoc(
+                    doc(db, 'usuarios_retiro_r119', user.uid),
+                    {
+                        nome: user.displayName || '',
+                        email: user.email || '',
+                        atualizadoEm: serverTimestamp()
+                    }
+                );
+            } catch (error) {
+                console.error('Erro ao registrar perfil:', error);
+                mensagemAcesso.textContent =
+                    'Não foi possível registrar o perfil. Confira as regras.';
+            }
+
+            if (sessaoAtual !== numeroSessao) return;
+
+            const email = (user.email || '').toLowerCase();
+            let acompanhandoLista = false;
+
+            escutasAcesso.push(onSnapshot(
+                doc(db, 'acessos_retiro_r119', user.uid),
+                snapshot => {
+                    if (sessaoAtual !== numeroSessao) return;
+
+                    const papel = user.emailVerified &&
+                        email === EMAIL_ADMIN
+                        ? 'admin'
+                        : snapshot.exists()
+                            ? snapshot.data().papel
+                            : user.emailVerified &&
+                              email === EMAIL_EDITOR_INICIAL
+                                ? 'editor'
+                                : 'visualizador';
+
+                    administrador = papel === 'admin';
+                    isLider = administrador || papel === 'editor';
+
+                    aplicarAcessoNaTela();
+
+                    if (!administrador || acompanhandoLista) return;
+                    acompanhandoLista = true;
+
+                    const mostrarErro = error => {
+                        if (sessaoAtual !== numeroSessao) return;
+                        console.error(error);
+                        mensagemAcesso.textContent =
+                            'Erro ao carregar acessos. Confira as regras.';
+                    };
+
+                    escutasAcesso.push(onSnapshot(
+                        collection(db, 'usuarios_retiro_r119'),
+                        lista => {
+                            if (sessaoAtual !== numeroSessao) return;
+
+                            usuarios = lista.docs.map(d => ({
+                                ...d.data(),
+                                id: d.id
+                            })).sort((a, b) =>
+                                (a.email || '').localeCompare(b.email || '')
+                            );
+
+                            atualizarPainelAcessos();
+                        },
+                        mostrarErro
+                    ));
+
+                    escutasAcesso.push(onSnapshot(
+                        collection(db, 'acessos_retiro_r119'),
+                        lista => {
+                            if (sessaoAtual !== numeroSessao) return;
+
+                            autorizacoes = new Map(
+                                lista.docs.map(d => [
+                                    d.id, d.data().papel
+                                ])
+                            );
+
+                            atualizarPainelAcessos();
+                        },
+                        mostrarErro
+                    ));
+                },
+                error => {
+                    if (sessaoAtual !== numeroSessao) return;
+                    console.error('Erro de autorização:', error);
+                    administrador = false;
+                    isLider = false;
+                    aplicarAcessoNaTela();
+                }
+            ));
+        });
+
+        async function alterarAcesso(papel) {
+            if (!administrador || salvandoAcesso) return;
+
+            const pessoa = usuarios.find(
+                p => p.id === seletorAcesso.value
+            );
+
+            if (!pessoa || papelDaPessoa(pessoa) === 'admin') return;
+
+            salvandoAcesso = true;
+            atualizarPainelAcessos();
+
+            try {
+                await setDoc(
+                    doc(db, 'acessos_retiro_r119', pessoa.id),
+                    {
+                        papel,
+                        atualizadoEm: serverTimestamp()
+                    }
+                );
+
+                mensagemAcesso.textContent =
+                    papel === 'editor'
+                        ? `Edição liberada para ${pessoa.email}.`
+                        : `Edição retirada de ${pessoa.email}.`;
+            } catch (error) {
+                console.error('Erro ao alterar acesso:', error);
+                mensagemAcesso.textContent =
+                    'Não foi possível salvar. Confira as regras do Firebase.';
+            } finally {
+                salvandoAcesso = false;
+                atualizarPainelAcessos();
+            }
+        }
+
+        document.getElementById('form-acessos')
+            .addEventListener('submit', event => {
+                event.preventDefault();
+                alterarAcesso('editor');
+            });
+
+        btnRevogar.addEventListener('click', () => {
+            alterarAcesso('visualizador');
+        });
         });
 
         // Escutar Pagamentos
@@ -347,6 +634,77 @@
             const row = document.getElementById(`history-${nomeId}`);
             if(row) row.classList.toggle('hidden');
         };
+        let renomeandoMembro = false;
+
+        async function editarNomeMembro(nomeAtual) {
+            if (!isLider || renomeandoMembro) return;
+
+            const resposta = prompt('Novo nome do membro:', nomeAtual);
+            if (resposta === null) return;
+
+            const novoNome = resposta.trim();
+
+            if (!novoNome || novoNome.length > 120) {
+                alert('Informe um nome com até 120 caracteres.');
+                return;
+            }
+
+            if (novoNome === nomeAtual) return;
+
+            const chaveAtual = nomeAtual.toUpperCase();
+            const chaveNova = novoNome.toUpperCase();
+
+            // Evita juntar duas pessoas pelo mesmo nome.
+            const nomeJaExiste = [...todosMembros, ...todosPagamentos]
+                .some(item =>
+                    item.nome.toUpperCase() === chaveNova &&
+                    item.nome.toUpperCase() !== chaveAtual
+                );
+
+            if (nomeJaExiste) {
+                alert('Já existe outra pessoa com esse nome.');
+                return;
+            }
+
+            const membros = todosMembros.filter(
+                m => m.nome.toUpperCase() === chaveAtual
+            );
+
+            const pagamentos = todosPagamentos.filter(
+                p => p.nome.toUpperCase() === chaveAtual
+            );
+
+            if (membros.length + pagamentos.length > 450) {
+                alert('Há muitos registros para esta alteração. Não foi alterado nenhum nome.');
+                return;
+            }
+
+            renomeandoMembro = true;
+
+            try {
+                const lote = writeBatch(db);
+
+                membros.forEach(m => {
+                    lote.update(doc(db, 'membros_celula', m.id), {
+                        nome: novoNome
+                    });
+                });
+
+                pagamentos.forEach(p => {
+                    lote.update(doc(db, 'pagamentos_retiro', p.id), {
+                        nome: novoNome
+                    });
+                });
+
+                await lote.commit();
+                alert('Nome atualizado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao editar nome:', error);
+                alert('Não foi possível atualizar o nome.');
+            } finally {
+                renomeandoMembro = false;
+            }
+        }
 
         function atualizarTabela() {
             const tabelaStatus = document.getElementById('tabela-status');
@@ -390,11 +748,22 @@
                 const idUnico = key.replace(/\s+/g, '');
 
                 const tr = document.createElement('tr');
-                tr.className = 'border-b border-gray-800 expandable-row';
-                tr.onclick = () => toggleHistory(idUnico);
+                                tr.className = 'border-b border-gray-800';
+
+                if (isLider) {
+                    tr.classList.add('expandable-row');
+                    tr.onclick = () => window.toggleHistory(idUnico);
+                }
                 tr.innerHTML = `
                     <td class="py-4 px-3 font-semibold capitalize flex items-center gap-2">
-                        <span class="text-xs text-gray-500">▶</span> ${dados.nomeReal.toLowerCase()}
+                        ${isLider ? '<span class="text-xs text-gray-500">▶</span>' : ''} ${dados.nomeReal.toLowerCase()}
+                                                ${isLider ? `
+                            <button type="button"
+                                data-editar-nome
+                                class="text-xs text-blue-400 hover:underline ml-2">
+                                Editar nome
+                            </button>
+                        ` : ''}
                     </td>
                     <td class="py-4 px-3 text-center text-green-400 font-bold">R$ ${dados.total.toFixed(2)}</td>
                     <td class="py-4 px-3 text-center text-red-400">R$ ${falta.toFixed(2)}</td>
@@ -407,7 +776,17 @@
                         </div>
                     </td>
                 `;
+                                const botaoNome = tr.querySelector('[data-editar-nome]');
+
+                if (botaoNome) {
+                    botaoNome.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        editarNomeMembro(dados.nomeReal);
+                    });
+                }
+
                 tabelaStatus.appendChild(tr);
+                if (!isLider) continue;
 
                 // Histórico e botões de editar/excluir
                 let linhasHistorico = '';
