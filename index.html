@@ -136,11 +136,21 @@
                 
                 <!-- Cadastrar Novo Pagamento -->
                 <div class="container-card p-6 space-y-4">
-                    <h2 class="text-xl font-bold text-white border-b border-gray-700 pb-2">Novo Pagamento</h2>
-                    <form id="form-pagamento" class="space-y-4">
+                    <details id="bloco-novo-pagamento">
+    <summary class="text-xl font-bold text-white border-b border-gray-700 pb-2 cursor-pointer">
+        Novo Pagamento
+    </summary>
+                    <form id="form-pagamento" class="space-y-4 mt-4">
                         <div>
                             <label class="block text-sm text-gray-400 mb-1">Nome do Membro</label>
-                            <input type="text" id="nome" class="input-field" placeholder="Ex: Mariana" required>
+                            <select id="nome" class="input-field" required>
+    <option value="">Selecione um membro</option>
+</select>
+
+<p id="resumo-pagamento-membro"
+   class="hidden mt-3 rounded-lg bg-gray-800 p-3 text-sm text-green-300"
+   aria-live="polite">
+</p>
                         </div>
                         <div>
                             <label class="block text-sm text-gray-400 mb-1">WhatsApp (Opcional)</label>
@@ -157,10 +167,69 @@
                                 <option value="Dinheiro">Dinheiro</option>
                             </select>
                         </div>
-                        <input type="hidden" id="edit-pagamento-id" value="">
+                        <div>
+    <label for="data-pagamento"
+           class="block text-sm text-gray-400 mb-1">
+        Data do recebimento
+    </label>
+
+    <input type="date"
+           id="data-pagamento"
+           class="input-field"
+           required>
+</div>
+
+<div class="space-y-2">
+    <label for="comprovante" class="block text-gray-400">
+        Comprovante (opcional)
+    </label>
+
+    <input
+        type="file"
+        id="comprovante"
+        accept="image/jpeg,image/png,image/webp"
+        class="input-field text-sm"
+    >
+
+    <p id="status-comprovante"
+       class="text-sm text-gray-400"
+       aria-live="polite"></p>
+
+    <div id="previa-comprovante" class="hidden space-y-3">
+        <details class="rounded-lg bg-gray-800 p-3">
+            <summary class="cursor-pointer text-sm text-green-300">
+                Conferir imagem antes de enviar
+            </summary>
+
+            <a id="ampliar-comprovante"
+               target="_blank"
+               rel="noopener"
+               class="block mt-3">
+                <img id="imagem-comprovante"
+                     alt="Prévia do comprovante selecionado"
+                     class="w-full rounded-lg">
+            </a>
+
+            <p class="mt-2 text-xs text-gray-400">
+                Clique na imagem para abrir e ampliar.
+                Confira o valor, a data e os nomes.
+            </p>
+        </details>
+
+        <button type="button"
+                id="remover-comprovante"
+                class="text-sm text-red-400 hover:underline">
+            Remover imagem selecionada
+        </button>
+    </div>
+</div>
+
+<input type="hidden" id="edit-pagamento-id" value="">
                         <button type="submit" id="btn-submit-pagamento" class="btn-primary mt-4">Registrar Pagamento</button>
                         <button type="button" id="btn-cancel-edit" class="hidden w-full mt-2 py-2 border border-gray-500 rounded-lg text-gray-300 hover:bg-gray-700 transition">Cancelar Edição</button>
                     </form>
+
+                    </details>
 
                     <!-- Área WhatsApp -->
                     <div id="area-whatsapp" class="hidden mt-6 p-4 bg-gray-800 rounded-lg text-center border border-gray-600">
@@ -172,14 +241,18 @@
 
                 <!-- Adicionar Membro na Célula -->
                 <div class="container-card p-6 space-y-4">
-                    <h2 class="text-xl font-bold text-white border-b border-gray-700 pb-2">Adicionar à Célula</h2>
-                    <form id="form-membro" class="space-y-4">
+                    <details id="bloco-adicionar-membro">
+    <summary class="text-xl font-bold text-white border-b border-gray-700 pb-2 cursor-pointer">
+        Adicionar à Célula
+    </summary>
+                    <form id="form-membro" class="space-y-4 mt-4">
                         <div>
                             <label class="block text-sm text-gray-400 mb-1">Nome do Membro</label>
                             <input type="text" id="novo-membro-nome" class="input-field" placeholder="Ex: Carlos" required>
                         </div>
                         <button type="submit" class="btn-secondary">Cadastrar na Célula</button>
                     </form>
+                    </details>
                 </div>
 
             </div>
@@ -195,7 +268,38 @@
     💡 Clique no nome do membro para ver o histórico ou gerenciar pagamentos.
 </p>
                 
-                <div class="overflow-x-auto">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div>
+        <label for="busca-membro"
+               class="block text-sm text-gray-400 mb-1">
+            Buscar pessoa
+        </label>
+
+        <input type="search"
+               id="busca-membro"
+               class="input-field"
+               placeholder="Digite parte do nome">
+    </div>
+
+    <div>
+        <label for="filtro-pagamento"
+               class="block text-sm text-gray-400 mb-1">
+            Situação do pagamento
+        </label>
+
+        <select id="filtro-pagamento" class="input-field">
+            <option value="todos">Todos</option>
+            <option value="pendentes">Pendentes</option>
+            <option value="quitados">Quitados</option>
+        </select>
+    </div>
+</div>
+
+<p id="resultado-busca"
+   class="text-sm text-gray-400"
+   aria-live="polite"></p>
+
+<div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-gray-700 text-gray-400 text-sm bg-gray-800">
@@ -214,6 +318,83 @@
 
         </div>
     </main>
+
+    <dialog id="dialog-editar-data"
+        class="container-card p-6 text-white w-full max-w-sm">
+
+    <form id="form-editar-data" class="space-y-4">
+        <h2 class="text-xl font-bold">
+            Alterar data do recebimento
+        </h2>
+
+        <p id="contexto-editar-data"
+           class="text-sm text-gray-400"></p>
+
+        <input type="hidden" id="pagamento-editar-data-id">
+
+        <div>
+            <label for="nova-data-recebimento"
+                   class="block text-sm text-gray-400 mb-1">
+                Data do recebimento
+            </label>
+
+            <input type="date"
+                   id="nova-data-recebimento"
+                   class="input-field"
+                   required>
+        </div>
+
+        <p id="mensagem-editar-data"
+           class="text-sm text-red-400"
+           role="status"></p>
+
+        <button type="submit"
+                id="btn-salvar-data"
+                class="btn-primary">
+            Salvar data
+        </button>
+
+        <button type="button"
+                id="btn-cancelar-data"
+                class="w-full py-2 text-gray-300">
+            Cancelar
+        </button>
+    </form>
+</dialog>
+
+<dialog id="dialog-comprovante"
+        class="container-card p-5 text-white w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
+
+    <div class="flex items-center justify-between gap-4 mb-4">
+        <h2 class="text-xl font-bold">Comprovante</h2>
+
+        <button type="button"
+                id="fechar-comprovante"
+                class="px-3 py-2 rounded bg-gray-700">
+            Fechar
+        </button>
+    </div>
+
+    <p id="contexto-comprovante"
+       class="text-sm text-gray-400 mb-3"></p>
+
+    <p id="mensagem-ver-comprovante"
+       class="text-sm text-gray-300"
+       role="status"></p>
+
+    <a id="link-ampliar-comprovante"
+       target="_blank"
+       rel="noopener"
+       class="hidden block mt-3">
+        <img id="imagem-ver-comprovante"
+             alt="Comprovante do pagamento"
+             class="w-full rounded-lg">
+
+        <span class="block mt-3 text-sm text-green-300">
+            Clique na imagem para abrir e ampliar.
+        </span>
+    </a>
+</dialog>
 
     <footer class="w-full text-center mt-8 mb-4 text-sm text-gray-400">
     Desenvolvido por
@@ -235,6 +416,10 @@
             setDoc, serverTimestamp
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+import {
+    getStorage, ref, uploadBytes, deleteObject, getBlob
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyD8AyVw3pairdOxbS86DBBj9WOJHSyKdhw",
             authDomain: "registrocelulas-6d494.firebaseapp.com",
@@ -247,6 +432,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
         const provider = new GoogleAuthProvider();
         
         const META_RETIRO = 450.00;
@@ -334,6 +520,13 @@
         }
 
         function aplicarAcessoNaTela() {
+            if (!isLider) {
+    const janelaComprovante = document.getElementById('dialog-comprovante');
+
+    if (janelaComprovante?.open) {
+        janelaComprovante.close();
+    }
+}
             formContainer.classList.toggle('hidden', !isLider);
 
             tableContainer.classList.toggle('lg:col-span-2', isLider);
@@ -560,78 +753,438 @@
         const btnSubmitPagamento = document.getElementById('btn-submit-pagamento');
         const btnCancelEdit = document.getElementById('btn-cancel-edit');
 
+let salvandoPagamento = false;
+
+let comprovanteSelecionado = null;
+let preparandoComprovante = false;
+let versaoComprovante = 0;
+let urlPreviaComprovante = '';
+
+const campoComprovante = document.getElementById('comprovante');
+const statusComprovante = document.getElementById('status-comprovante');
+const previaComprovante = document.getElementById('previa-comprovante');
+const imagemComprovante = document.getElementById('imagem-comprovante');
+const ampliarComprovante = document.getElementById('ampliar-comprovante');
+
+function limparComprovante() {
+    versaoComprovante++;
+    comprovanteSelecionado = null;
+    preparandoComprovante = false;
+    campoComprovante.value = '';
+    statusComprovante.textContent = '';
+    previaComprovante.classList.add('hidden');
+    imagemComprovante.removeAttribute('src');
+    ampliarComprovante.removeAttribute('href');
+
+    if (urlPreviaComprovante) {
+        URL.revokeObjectURL(urlPreviaComprovante);
+        urlPreviaComprovante = '';
+    }
+}
+
+function formatarTamanhoArquivo(bytes) {
+    return bytes < 1024 * 1024
+        ? `${(bytes / 1024).toFixed(0)} KB`
+        : `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+async function comprimirComprovante(arquivo) {
+    const tipos = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!tipos.includes(arquivo.type)) {
+        throw new Error('Selecione uma imagem JPEG, PNG ou WebP.');
+    }
+
+    if (arquivo.size > 20 * 1024 * 1024) {
+        throw new Error('Selecione uma imagem de até 20 MB.');
+    }
+
+    const urlOriginal = URL.createObjectURL(arquivo);
+
+    try {
+        const imagem = new Image();
+
+        await new Promise((resolve, reject) => {
+            imagem.onload = resolve;
+            imagem.onerror = () => reject(
+                new Error('Não foi possível abrir essa imagem.')
+            );
+            imagem.src = urlOriginal;
+        });
+
+        // Imagens pequenas são preservadas sem recompressão.
+        if (arquivo.size <= 1024 * 1024) return arquivo;
+
+        const escala = Math.min(
+            1,
+            3200 / Math.max(imagem.naturalWidth, imagem.naturalHeight)
+        );
+
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(
+            1, Math.round(imagem.naturalWidth * escala)
+        );
+        canvas.height = Math.max(
+            1, Math.round(imagem.naturalHeight * escala)
+        );
+
+        const contexto = canvas.getContext('2d');
+
+        if (!contexto) {
+            throw new Error('Não foi possível preparar a imagem.');
+        }
+
+        contexto.fillStyle = '#ffffff';
+        contexto.fillRect(0, 0, canvas.width, canvas.height);
+        contexto.drawImage(imagem, 0, 0, canvas.width, canvas.height);
+
+        const comprimido = await new Promise(resolve => {
+            canvas.toBlob(resolve, 'image/jpeg', 0.9);
+        });
+
+        if (!comprimido) {
+            throw new Error('Não foi possível comprimir a imagem.');
+        }
+
+        // Usa a versão menor, sem aumentar o arquivo original.
+        const resultado = comprimido.size < arquivo.size
+            ? comprimido
+            : arquivo;
+
+        if (resultado.size > 5 * 1024 * 1024) {
+            throw new Error(
+                'A imagem ainda supera 5 MB. Recorte o comprovante e tente novamente.'
+            );
+        }
+
+        return resultado;
+    } finally {
+        URL.revokeObjectURL(urlOriginal);
+    }
+}
+
+campoComprovante.addEventListener('change', async () => {
+    const arquivo = campoComprovante.files[0];
+
+    limparComprovante();
+
+    if (!arquivo || !isLider) return;
+
+    const versaoAtual = versaoComprovante;
+    preparandoComprovante = true;
+    statusComprovante.textContent = 'Preparando imagem…';
+
+    try {
+        const resultado = await comprimirComprovante(arquivo);
+
+        // Ignora um processamento antigo se a seleção mudar.
+        if (versaoAtual !== versaoComprovante) return;
+
+        comprovanteSelecionado = resultado;
+        urlPreviaComprovante = URL.createObjectURL(resultado);
+
+        imagemComprovante.src = urlPreviaComprovante;
+        ampliarComprovante.href = urlPreviaComprovante;
+        previaComprovante.classList.remove('hidden');
+
+        statusComprovante.textContent =
+            `Original: ${formatarTamanhoArquivo(arquivo.size)} • ` +
+            `Para envio: ${formatarTamanhoArquivo(resultado.size)}`;
+    } catch (error) {
+        if (versaoAtual !== versaoComprovante) return;
+
+        statusComprovante.textContent = error.message;
+        previaComprovante.classList.remove('hidden');
+    } finally {
+        if (versaoAtual === versaoComprovante) {
+            preparandoComprovante = false;
+        }
+    }
+});
+
+document.getElementById('remover-comprovante')
+    .addEventListener('click', limparComprovante);
+
+formPagamento.addEventListener('reset', limparComprovante);
+
+async function salvarPagamentoComComprovante(idEditando, dados) {
+    const pagamentoAnterior = idEditando
+        ? todosPagamentos.find(p => p.id === idEditando)
+        : null;
+
+    if (idEditando && !pagamentoAnterior) {
+        throw new Error('Pagamento não encontrado. Atualize a página.');
+    }
+
+    const pagamentoRef = idEditando
+        ? doc(db, 'pagamentos_retiro', idEditando)
+        : doc(collection(db, 'pagamentos_retiro'));
+
+    const imagemParaEnviar = comprovanteSelecionado;
+    const caminhoAnterior = pagamentoAnterior?.comprovanteCaminho || '';
+    let novoCaminho = '';
+
+    if (imagemParaEnviar) {
+        const extensoes = {
+            'image/jpeg': 'jpg',
+            'image/png': 'png',
+            'image/webp': 'webp'
+        };
+
+        const extensao = extensoes[imagemParaEnviar.type];
+
+        if (!extensao || imagemParaEnviar.size > 5 * 1024 * 1024) {
+            throw new Error('O comprovante deve ser uma imagem de até 5 MB.');
+        }
+
+        novoCaminho =
+            `comprovantes_retiro_r119/${pagamentoRef.id}/` +
+            `${crypto.randomUUID()}.${extensao}`;
+
+        btnSubmitPagamento.textContent = 'Enviando comprovante…';
+
+        await uploadBytes(
+            ref(storage, novoCaminho),
+            imagemParaEnviar,
+            {
+                contentType: imagemParaEnviar.type,
+                cacheControl: 'private, max-age=0'
+            }
+        );
+
+        dados = {
+            ...dados,
+            comprovanteCaminho: novoCaminho
+        };
+    }
+
+    btnSubmitPagamento.textContent = 'Salvando pagamento…';
+
+    const lote = writeBatch(db);
+
+    if (idEditando) {
+        // Sem uma imagem nova, mantém o comprovante existente.
+        lote.update(pagamentoRef, dados);
+    } else {
+        lote.set(pagamentoRef, {
+            ...dados,
+            celula: 'R119'
+        });
+
+        const membroExiste = todosMembros.some(
+            membro => membro.nome.toUpperCase() === dados.nome.toUpperCase()
+        );
+
+        if (!membroExiste) {
+            lote.set(doc(collection(db, 'membros_celula')), {
+                nome: dados.nome
+            });
+        }
+    }
+
+    await lote.commit();
+
+    // Só remove a imagem antiga depois de salvar a substituição.
+    if (
+        novoCaminho &&
+        caminhoAnterior &&
+        caminhoAnterior.startsWith(
+            `comprovantes_retiro_r119/${pagamentoRef.id}/`
+        )
+    ) {
+        try {
+            await deleteObject(ref(storage, caminhoAnterior));
+        } catch (error) {
+            console.warn('Não foi possível remover o comprovante antigo:', error);
+        }
+    }
+}
+
         formPagamento.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            if (!isLider || salvandoPagamento) return;
+            if (preparandoComprovante) {
+    alert('Aguarde a preparação da imagem.');
+    return;
+}
+
+if (statusComprovante.textContent && !comprovanteSelecionado) {
+    alert('Selecione uma imagem válida ou clique em Remover imagem selecionada.');
+    return;
+}
             const nome = document.getElementById('nome').value.trim();
             const whatsapp = document.getElementById('whatsapp').value.replace(/\D/g, '');
             const valor = parseFloat(document.getElementById('valor').value);
             const metodo = document.getElementById('metodo').value;
-            const idEditando = editPagamentoId.value;
+                        const idEditando = editPagamentoId.value;
 
-            try {
-                if (idEditando) {
-                    // Atualizar pagamento existente
-                    await updateDoc(doc(db, "pagamentos_retiro", idEditando), {
-                        nome: nome,
-                        whatsapp: whatsapp,
-                        valor: valor,
-                        metodo: metodo
-                    });
-                    alert("Pagamento atualizado com sucesso!");
-                    resetarFormularioEdicao();
-                } else {
-                    // Criar novo pagamento
-                    await addDoc(collection(db, "pagamentos_retiro"), {
-                        nome: nome,
-                        whatsapp: whatsapp,
-                        valor: valor,
-                        metodo: metodo,
-                        celula: "R119",
-                        data: new Date().toISOString()
-                    });
+            if (!isLider) return;
 
-                    // Garantir que o membro também conste na lista de membros da célula
-                    const existeNaLista = todosMembros.some(m => m.nome.toLowerCase() === nome.toLowerCase());
-                    if (!existeNaLista) {
-                        await addDoc(collection(db, "membros_celula"), { nome: nome });
-                    }
+            const dataEscolhida =
+                document.getElementById('data-pagamento').value;
 
-                    if (whatsapp) {
-                        const totalJaPago = todosPagamentos
-                            .filter(p => p.nome.toLowerCase() === nome.toLowerCase())
-                            .reduce((acc, curr) => acc + curr.valor, 0) + valor; 
-                        const saldoDevedor = Math.max(META_RETIRO - totalJaPago, 0);
-
-                        const mensagem = `Olá, *${nome}*! \nConfirmamos o registro do seu pagamento para o *Retiro* da célula R119.\n\n- *Valor recebido:* R$ ${valor.toFixed(2).replace('.', ',')}\n- *Total já pago:* R$ ${totalJaPago.toFixed(2).replace('.', ',')} / R$ 450,00\n- *Falta:* R$ ${saldoDevedor.toFixed(2).replace('.', ',')}\n\nDeus abençoe!`;
-                        
-                        btnEnviarWa.href = `https://wa.me/55${whatsapp}?text=${encodeURIComponent(mensagem)}`;
-                        formPagamento.classList.add('hidden');
-                        areaWhatsapp.classList.remove('hidden');
-                    } else {
-                        formPagamento.reset();
-                        alert("Pagamento registrado com sucesso!");
-                    }
-                }
-            } catch (error) {
-                console.error("Erro ao salvar:", error); 
-                alert("Erro ao salvar.");
+            if (!dataEscolhida) {
+                alert('Informe a data do recebimento.');
+                return;
             }
-        });
 
-        function resetarFormularioEdicao() {
+            const dataRecebimento =
+                new Date(`${dataEscolhida}T12:00:00`);
+
+            if (Number.isNaN(dataRecebimento.getTime())) {
+                alert('Informe uma data válida.');
+                return;
+            }
+
+            const pagamentoAnterior = idEditando
+                ? todosPagamentos.find(p => p.id === idEditando)
+                : null;
+
+            const dataAnterior = pagamentoAnterior?.data
+                ? new Date(pagamentoAnterior.data)
+                : null;
+
+            // Preserva o horário original quando o dia não muda.
+            const manterDataAnterior = dataAnterior &&
+                !Number.isNaN(dataAnterior.getTime()) &&
+                dataLocalParaCampo(dataAnterior) === dataEscolhida;
+
+            const dataParaSalvar = manterDataAnterior
+                ? pagamentoAnterior.data
+                : dataRecebimento.toISOString();
+
+            if (!nome || !Number.isFinite(valor) || valor <= 0) {
+    alert('Selecione uma pessoa e informe um valor maior que zero.');
+    return;
+}
+
+const valorConfirmacao = valor.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+});
+
+const dataDoCampo = document.getElementById('data-pagamento').value;
+const dataConfirmacao = dataDoCampo.split('-').reverse().join('/');
+
+const acaoConfirmacao = idEditando
+    ? 'Salvar as alterações deste pagamento?'
+    : 'Registrar este pagamento?';
+
+const confirmou = window.confirm(
+    `${acaoConfirmacao}\n\n` +
+    `Pessoa: ${nome}\n` +
+    `Valor: ${valorConfirmacao}\n` +
+    `Data do recebimento: ${dataConfirmacao}\n` +
+    `Forma: ${metodo}`
+);
+
+if (!confirmou) return;
+
+salvandoPagamento = true;
+btnSubmitPagamento.disabled = true;
+btnSubmitPagamento.textContent = 'Salvando…';
+btnSubmitPagamento.classList.add('opacity-60', 'cursor-wait');
+
+const totalAntesDoRegistro = todosPagamentos
+    .filter(p => p.nome.toUpperCase() === nome.toUpperCase())
+    .reduce((total, p) => total + Number(p.valor || 0), 0);
+
+const estadoDosCampos = [...formPagamento.elements].map(campo => ({
+    campo,
+    disabled: campo.disabled
+}));
+
+estadoDosCampos.forEach(({ campo }) => {
+    campo.disabled = true;
+});
+
+try {
+    await salvarPagamentoComComprovante(idEditando, {
+        nome,
+        whatsapp,
+        valor,
+        metodo,
+        data: dataParaSalvar
+    });
+
+    if (idEditando) {
+        resetarFormularioEdicao();
+        alert('Pagamento atualizado com sucesso!');
+    } else if (whatsapp) {
+        const totalJaPago = totalAntesDoRegistro + valor;
+        const saldoDevedor = Math.max(META_RETIRO - totalJaPago, 0);
+
+        const mensagem =
+            `Olá, *${nome}*!\n` +
+            `Confirmamos o registro do seu pagamento para o *Retiro* da célula R119.\n\n` +
+            `- *Valor recebido:* R$ ${valor.toFixed(2).replace('.', ',')}\n` +
+            `- *Total já pago:* R$ ${totalJaPago.toFixed(2).replace('.', ',')} / R$ 450,00\n` +
+            `- *Falta:* R$ ${saldoDevedor.toFixed(2).replace('.', ',')}\n\n` +
+            `Deus abençoe!`;
+
+        btnEnviarWa.href =
+            `https://wa.me/55${whatsapp}?text=${encodeURIComponent(mensagem)}`;
+
+        resetarFormularioEdicao();
+        formPagamento.classList.add('hidden');
+        areaWhatsapp.classList.remove('hidden');
+    } else {
+        resetarFormularioEdicao();
+        alert('Pagamento registrado com sucesso!');
+    }
+            } catch (error) {
+    console.error("Erro ao salvar:", error);
+    alert("Erro ao salvar.");
+} finally {
+    estadoDosCampos.forEach(({ campo, disabled }) => {
+        campo.disabled = disabled;
+    });
+
+    salvandoPagamento = false;
+    btnSubmitPagamento.disabled = false;
+    btnSubmitPagamento.classList.remove('opacity-60', 'cursor-wait');
+
+    btnSubmitPagamento.textContent = editPagamentoId.value
+        ? 'Salvar Alterações'
+        : 'Registrar Pagamento';
+}
+        });
+        function dataLocalParaCampo(data = new Date()) {
+            const ano = data.getFullYear();
+            const mes = String(data.getMonth() + 1).padStart(2, '0');
+            const dia = String(data.getDate()).padStart(2, '0');
+
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        function preencherDataHoje() {
+            document.getElementById('data-pagamento').value =
+                dataLocalParaCampo();
+        }
+
+        preencherDataHoje();
+
+                function resetarFormularioEdicao() {
             formPagamento.reset();
             editPagamentoId.value = '';
-            btnSubmitPagamento.textContent = "Registrar Pagamento";
+
+            btnSubmitPagamento.textContent = 'Registrar Pagamento';
             btnCancelEdit.classList.add('hidden');
+
+            preencherDataHoje();
+            atualizarResumoPagamento();
         }
 
         btnCancelEdit.addEventListener('click', resetarFormularioEdicao);
 
-        document.getElementById('btn-novo-registro').addEventListener('click', () => {
-            formPagamento.reset();
-            formPagamento.classList.remove('hidden');
-            areaWhatsapp.classList.add('hidden');
-        });
+                document.getElementById('btn-novo-registro')
+            .addEventListener('click', () => {
+                resetarFormularioEdicao();
+
+                formPagamento.classList.remove('hidden');
+                areaWhatsapp.classList.add('hidden');
+            });
 
         // Funções Globais de Ação
         window.deletarPagamento = async (id) => {
@@ -644,16 +1197,282 @@
             }
         };
 
-        window.editarPagamento = (id, nome, whatsapp, valor, metodo) => {
-            document.getElementById('nome').value = nome;
+                window.editarPagamento = (id, nome, whatsapp, valor, metodo) => {
+    if (!isLider || salvandoPagamento) return;
+
+    limparComprovante();
+
+            const pagamento = todosPagamentos.find(p => p.id === id);
+
+            if (!pagamento) {
+                alert('Pagamento não encontrado.');
+                return;
+            }
+
+            const seletorNome = document.getElementById('nome');
+
+            const opcao = [...seletorNome.options].find(
+                item => item.value.toUpperCase() === nome.toUpperCase()
+            );
+
+            seletorNome.value = opcao?.value || '';
+
             document.getElementById('whatsapp').value = whatsapp || '';
             document.getElementById('valor').value = valor;
             document.getElementById('metodo').value = metodo;
+
+            const data = pagamento.data
+                ? new Date(pagamento.data)
+                : new Date();
+
+            document.getElementById('data-pagamento').value =
+                Number.isNaN(data.getTime())
+                    ? dataLocalParaCampo()
+                    : dataLocalParaCampo(data);
+
             editPagamentoId.value = id;
-            btnSubmitPagamento.textContent = "Salvar Alterações";
+
+            btnSubmitPagamento.textContent = 'Salvar Alterações';
             btnCancelEdit.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            formPagamento.classList.remove('hidden');
+            areaWhatsapp.classList.add('hidden');
+
+            document.getElementById('bloco-novo-pagamento').open = true;
+
+            atualizarResumoPagamento();
+
+            document.getElementById('bloco-novo-pagamento')
+                .scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
         };
+        const dialogData = document.getElementById('dialog-editar-data');
+        const formData = document.getElementById('form-editar-data');
+        const btnSalvarData = document.getElementById('btn-salvar-data');
+        const btnCancelarData = document.getElementById('btn-cancelar-data');
+        const mensagemData = document.getElementById('mensagem-editar-data');
+
+        let salvandoData = false;
+
+        window.editarDataPagamento = id => {
+            if (!isLider || salvandoData) return;
+
+            const pagamento = todosPagamentos.find(p => p.id === id);
+            if (!pagamento) return;
+
+            document.getElementById('pagamento-editar-data-id').value = id;
+
+            const data = pagamento.data
+                ? new Date(pagamento.data)
+                : new Date();
+
+            document.getElementById('nova-data-recebimento').value =
+                Number.isNaN(data.getTime())
+                    ? dataLocalParaCampo()
+                    : dataLocalParaCampo(data);
+
+            const valor = Number(pagamento.valor).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+
+            document.getElementById('contexto-editar-data').textContent =
+                `${pagamento.nome} • Pagamento de ${valor}`;
+
+            mensagemData.textContent = '';
+            dialogData.showModal();
+        };
+
+        btnCancelarData.addEventListener('click', () => {
+            if (!salvandoData) dialogData.close();
+        });
+
+        dialogData.addEventListener('cancel', event => {
+            if (salvandoData) event.preventDefault();
+        });
+
+        formData.addEventListener('submit', async event => {
+            event.preventDefault();
+
+            if (!isLider || salvandoData) return;
+
+            const id = document.getElementById(
+                'pagamento-editar-data-id'
+            ).value;
+
+            const dataEscolhida = document.getElementById(
+                'nova-data-recebimento'
+            ).value;
+
+            const pagamento = todosPagamentos.find(p => p.id === id);
+            if (!pagamento || !dataEscolhida) return;
+
+            const novaData = new Date(`${dataEscolhida}T12:00:00`);
+
+            if (Number.isNaN(novaData.getTime())) {
+                mensagemData.textContent = 'Informe uma data válida.';
+                return;
+            }
+
+            const dataAtual = pagamento.data
+                ? new Date(pagamento.data)
+                : null;
+
+            if (dataAtual &&
+                !Number.isNaN(dataAtual.getTime()) &&
+                dataLocalParaCampo(dataAtual) === dataEscolhida) {
+                dialogData.close();
+                return;
+            }
+
+            salvandoData = true;
+            btnSalvarData.disabled = true;
+            btnCancelarData.disabled = true;
+            btnSalvarData.textContent = 'Salvando…';
+            mensagemData.textContent = '';
+
+            try {
+                // Atualiza somente a data deste lançamento.
+                await updateDoc(doc(db, 'pagamentos_retiro', id), {
+                    data: novaData.toISOString()
+                });
+
+                dialogData.close();
+            } catch (error) {
+                console.error('Erro ao alterar data:', error);
+                mensagemData.textContent =
+                    'Não foi possível salvar a data. Tente novamente.';
+            } finally {
+                salvandoData = false;
+                btnSalvarData.disabled = false;
+                btnCancelarData.disabled = false;
+                btnSalvarData.textContent = 'Salvar data';
+            }
+        });
+
+        const dialogComprovante = document.getElementById('dialog-comprovante');
+const contextoComprovante = document.getElementById('contexto-comprovante');
+const mensagemVerComprovante = document.getElementById('mensagem-ver-comprovante');
+const imagemVerComprovante = document.getElementById('imagem-ver-comprovante');
+const linkAmpliarComprovante = document.getElementById('link-ampliar-comprovante');
+
+let urlComprovanteAberto = '';
+let versaoVisualizacaoComprovante = 0;
+
+function limparVisualizacaoComprovante() {
+    versaoVisualizacaoComprovante++;
+    imagemVerComprovante.removeAttribute('src');
+    linkAmpliarComprovante.removeAttribute('href');
+    linkAmpliarComprovante.classList.add('hidden');
+
+    if (urlComprovanteAberto) {
+        URL.revokeObjectURL(urlComprovanteAberto);
+        urlComprovanteAberto = '';
+    }
+}
+
+document.getElementById('fechar-comprovante')
+    .addEventListener('click', () => dialogComprovante.close());
+
+dialogComprovante.addEventListener('close', limparVisualizacaoComprovante);
+
+window.verComprovante = async (id) => {
+    if (!isLider) return;
+
+    const pagamento = todosPagamentos.find(p => p.id === id);
+    const caminho = pagamento?.comprovanteCaminho;
+
+    if (
+        typeof caminho !== 'string' ||
+        !caminho.startsWith(`comprovantes_retiro_r119/${id}/`)
+    ) {
+        alert('Este pagamento não tem um comprovante disponível.');
+        return;
+    }
+
+    limparVisualizacaoComprovante();
+
+    const versaoAtual = versaoVisualizacaoComprovante;
+
+    contextoComprovante.textContent =
+        `${pagamento.nome} • ` +
+        Number(pagamento.valor).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+
+    mensagemVerComprovante.textContent = 'Carregando comprovante…';
+
+    if (!dialogComprovante.open) {
+        dialogComprovante.showModal();
+    }
+
+    try {
+        const imagem = await getBlob(
+            ref(storage, caminho),
+            5 * 1024 * 1024
+        );
+
+        if (
+            !isLider ||
+            !dialogComprovante.open ||
+            versaoAtual !== versaoVisualizacaoComprovante
+        ) return;
+
+        const bytes = new Uint8Array(
+    await imagem.slice(0, 12).arrayBuffer()
+);
+
+let tipoImagem = '';
+
+if (
+    bytes[0] === 0xff &&
+    bytes[1] === 0xd8 &&
+    bytes[2] === 0xff
+) {
+    tipoImagem = 'image/jpeg';
+} else if (
+    [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+        .every((valor, indice) => bytes[indice] === valor)
+) {
+    tipoImagem = 'image/png';
+} else if (
+    String.fromCharCode(...bytes.slice(0, 4)) === 'RIFF' &&
+    String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP'
+) {
+    tipoImagem = 'image/webp';
+}
+
+if (!tipoImagem) {
+    throw new Error('O arquivo não é uma imagem JPEG, PNG ou WebP válida.');
+}
+
+if (
+    !isLider ||
+    !dialogComprovante.open ||
+    versaoAtual !== versaoVisualizacaoComprovante
+) return;
+
+const imagemComTipo = new Blob([imagem], {
+    type: tipoImagem
+});
+
+urlComprovanteAberto = URL.createObjectURL(imagemComTipo);
+        imagemVerComprovante.src = urlComprovanteAberto;
+        linkAmpliarComprovante.href = urlComprovanteAberto;
+        linkAmpliarComprovante.classList.remove('hidden');
+        mensagemVerComprovante.textContent = '';
+    } catch (error) {
+        if (versaoAtual !== versaoVisualizacaoComprovante) return;
+
+        console.error('Erro ao abrir comprovante:', error);
+
+        mensagemVerComprovante.textContent =
+            'Não foi possível abrir o comprovante. Confira sua conexão e as permissões.';
+    }
+};
 
         window.toggleHistory = (nomeId) => {
             const row = document.getElementById(`history-${nomeId}`);
@@ -730,8 +1549,134 @@
                 renomeandoMembro = false;
             }
         }
+        function atualizarResumoPagamento() {
+            const nome = document.getElementById('nome').value;
+            const resumo = document.getElementById(
+                'resumo-pagamento-membro'
+            );
+
+            resumo.classList.toggle('hidden', !nome);
+
+            if (!nome) {
+                resumo.textContent = '';
+                return;
+            }
+
+            const total = todosPagamentos
+                .filter(p =>
+                    p.nome.toUpperCase() === nome.toUpperCase()
+                )
+                .reduce((soma, p) =>
+                    soma + Number(p.valor || 0), 0
+                );
+
+            const falta = Math.max(META_RETIRO - total, 0);
+
+            const moeda = valor => valor.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+
+            resumo.textContent =
+                `Já pagou: ${moeda(total)} • Falta: ${moeda(falta)}`;
+        }
+
+        document.getElementById('nome').addEventListener(
+            'change', atualizarResumoPagamento
+        );
+
+        function atualizarSelecaoMembros() {
+            const seletor = document.getElementById('nome');
+            const selecionado = seletor.value;
+            const pessoas = new Map();
+
+            // Inclui as mesmas pessoas usadas no acompanhamento.
+            [...todosMembros, ...todosPagamentos].forEach(item => {
+                const nome = item.nome;
+
+                if (nome && !pessoas.has(nome.toUpperCase())) {
+                    pessoas.set(nome.toUpperCase(), nome);
+                }
+            });
+
+            seletor.replaceChildren(
+                new Option('Selecione um membro', '')
+            );
+
+            [...pessoas.values()]
+                .sort((a, b) => a.localeCompare(b, 'pt-BR'))
+                .forEach(nome => {
+                    seletor.add(new Option(nome, nome));
+                });
+
+                        seletor.value = selecionado;
+            atualizarResumoPagamento();
+        }
+
+        document.getElementById('nome')
+            .addEventListener('change', event => {
+                const nome = event.target.value.toUpperCase();
+
+                const membro = todosMembros.find(
+                    m => m.nome.toUpperCase() === nome
+                );
+
+                const pagamento = todosPagamentos.find(
+                    p => p.nome.toUpperCase() === nome && p.whatsapp
+                );
+
+                document.getElementById('whatsapp').value =
+                    membro?.whatsapp || pagamento?.whatsapp || '';
+            });
+            
+                    function normalizarBusca(texto) {
+            return String(texto || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+        }
+
+        document.getElementById('busca-membro')
+            .addEventListener('input', atualizarTabela);
+
+        document.getElementById('filtro-pagamento')
+            .addEventListener('change', atualizarTabela);
+function iniciarPagamentoMembro(nome) {
+    if (!isLider || salvandoPagamento) return;
+
+    resetarFormularioEdicao();
+
+    const seletor = document.getElementById('nome');
+    const opcao = [...seletor.options].find(
+        item => item.value.toUpperCase() === nome.toUpperCase()
+    );
+
+    if (!opcao) {
+        alert('Pessoa não encontrada na lista.');
+        return;
+    }
+
+    seletor.value = opcao.value;
+    seletor.dispatchEvent(new Event('change'));
+
+    formPagamento.classList.remove('hidden');
+    areaWhatsapp.classList.add('hidden');
+
+    const bloco = document.getElementById('bloco-novo-pagamento');
+    bloco.open = true;
+    bloco.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+
+    document.getElementById('valor').focus({
+        preventScroll: true
+    });
+}
 
         function atualizarTabela() {
+                    atualizarSelecaoMembros();
             const tabelaStatus = document.getElementById('tabela-status');
             tabelaStatus.innerHTML = '';
             
@@ -766,7 +1711,45 @@
             document.getElementById('kpi-progress-text').textContent = `${progressoGeral}%`;
 
             // Gerar Linhas da Tabela
-            for (const [key, dados] of Object.entries(resumoMembros)) {
+                        const busca = normalizarBusca(
+                document.getElementById('busca-membro').value
+            );
+
+            const situacao = document.getElementById(
+                'filtro-pagamento'
+            ).value;
+
+            const membrosVisiveis = Object.entries(resumoMembros)
+                .filter(([key, dados]) => {
+                    const correspondeNome =
+                        normalizarBusca(dados.nomeReal).includes(busca);
+
+                    const quitado = dados.total >= META_RETIRO;
+
+                    const correspondeSituacao =
+                        situacao === 'todos' ||
+                        (situacao === 'pendentes' && !quitado) ||
+                        (situacao === 'quitados' && quitado);
+
+                    return correspondeNome && correspondeSituacao;
+                });
+
+            document.getElementById('resultado-busca').textContent =
+                `${membrosVisiveis.length} de ` +
+                `${Object.keys(resumoMembros).length} pessoas`;
+
+            if (membrosVisiveis.length === 0) {
+                tabelaStatus.innerHTML = `
+                    <tr>
+                        <td colspan="4"
+                            class="py-6 text-center text-gray-400">
+                            Nenhuma pessoa encontrada.
+                        </td>
+                    </tr>
+                `;
+            }
+
+            for (const [key, dados] of membrosVisiveis) {
                 const falta = Math.max(META_RETIRO - dados.total, 0);
                 const porcentagem = Math.min((dados.total / META_RETIRO) * 100, 100).toFixed(0);
                 let corBarra = porcentagem == 100 ? 'bg-green-500' : 'bg-blue-500';
@@ -780,16 +1763,32 @@
                     tr.onclick = () => window.toggleHistory(idUnico);
                 }
                 tr.innerHTML = `
-                    <td class="py-4 px-3 font-semibold capitalize flex items-center gap-2">
-                        ${isLider ? '<span class="text-xs text-gray-500">▶</span>' : ''} ${dados.nomeReal.toLowerCase()}
-                                                ${isLider ? `
-                            <button type="button"
-                                data-editar-nome
-                                class="text-xs text-blue-400 hover:underline ml-2">
-                                Editar nome
-                            </button>
-                        ` : ''}
-                    </td>
+                    <td class="py-4 px-3">
+    <div class="font-semibold capitalize flex items-center gap-2">
+        ${isLider ? '<span class="text-xs text-gray-500">▶</span>' : ''}
+        <span data-nome-membro></span>
+    </div>
+
+    ${isLider ? `
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+            <button
+                type="button"
+                data-novo-pagamento
+                class="text-xs text-green-300 bg-green-900/30 rounded px-2 py-1"
+            >
+                Registrar pagamento
+            </button>
+
+            <button
+                type="button"
+                data-editar-nome
+                class="text-xs text-blue-400 hover:underline"
+            >
+                Editar nome
+            </button>
+        </div>
+    ` : ''}
+</td>
                     <td class="py-4 px-3 text-center text-green-400 font-bold">R$ ${dados.total.toFixed(2)}</td>
                     <td class="py-4 px-3 text-center text-red-400">R$ ${falta.toFixed(2)}</td>
                     <td class="py-4 px-3">
@@ -801,6 +1800,17 @@
                         </div>
                     </td>
                 `;
+
+                tr.querySelector('[data-nome-membro]').textContent = dados.nomeReal;
+
+                const botaoPagamento = tr.querySelector('[data-novo-pagamento]');
+
+if (botaoPagamento) {
+    botaoPagamento.addEventListener('click', (event) => {
+        event.stopPropagation();
+        iniciarPagamentoMembro(dados.nomeReal);
+    });
+}
                                 const botaoNome = tr.querySelector('[data-editar-nome]');
 
                 if (botaoNome) {
@@ -822,7 +1832,25 @@
                         const dataFormatada = p.data ? new Date(p.data).toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'}) : '--/--';
                         const btnAcoes = isLider ? `
                             <div class="flex gap-2">
-                                <button onclick="editarPagamento('${p.id}', '${p.nome}', '${p.whatsapp || ''}', ${p.valor}, '${p.metodo}')" class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-blue-900/30 rounded border border-blue-800/50">Editar</button>
+                                <button type="button"
+        onclick="editarPagamento('${p.id}', '${p.nome}', '${p.whatsapp || ''}', ${p.valor}, '${p.metodo}')"
+        class="text-blue-400 text-xs px-2 py-1 bg-blue-900/30 rounded">
+    Editar pagamento
+</button>
+
+<button type="button"
+        onclick="editarDataPagamento('${p.id}')"
+        class="text-yellow-300 text-xs px-2 py-1 bg-yellow-900/30 rounded">
+    Editar data
+</button>
+
+${p.comprovanteCaminho ? `
+    <button type="button"
+            onclick="verComprovante('${p.id}')"
+            class="text-green-300 text-xs px-2 py-1 bg-green-900/30 rounded">
+        Ver comprovante
+    </button>
+` : ''}
                                 <button onclick="deletarPagamento('${p.id}')" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-900/30 rounded border border-red-800/50">Excluir</button>
                             </div>
                         ` : '';
